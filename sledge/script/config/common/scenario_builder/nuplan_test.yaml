@@ -10,7 +10,7 @@ db_files: null  # if db file(s) exist locally, the data_root is ignored
 
 map_version: nuplan-maps-v1.0
 
-include_cameras: false # Include camera data in the scenarios.
+include_cameras: true # Include camera data in the scenarios.
 
 max_workers: null
 verbose: ${verbose}

@@ -3,7 +3,7 @@ from __future__ import annotations
 import torch
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union, Optional
 from enum import Enum
 
 from nuplan.planning.script.builders.utils.utils_type import validate_type
@@ -18,6 +18,11 @@ class SledgeConfig:
     # 1. features raw
     radius: int = 100
     pose_interval: int = 1.0
+    filter_vehicles_by_drivable_area: bool = True
+    temporal: bool = False  # if True, process the entire scenario (not only iteration 0)
+    sequence_length: Optional[int] = None  # If None, uses full scenario length
+    filter_non_overlapping: bool = False  # If True, scenarios are filtered to remove overlapping scenarios
+    non_overlapping_gap_seconds: float = 1.0  # If filter_non_overlapping is True, this is the gap in seconds between scenarios to be considered non-overlapping
 
     # 2. features raster & vector
     frame: Tuple[int, int] = (64, 64)
@@ -153,6 +158,8 @@ class SledgeVectorNew(AbstractModelFeature):
     red_lights: SledgeVectorElement
     ego: SledgeVectorElement
     G: SledgeVectorElement
+    cam_infos: Optional[Dict[str, Any]] = None
+    metadata: Optional[Dict[str, Any]] = None
 
     def to_device(self, device: torch.device) -> SledgeVectorNew:
         """Implemented. See interface."""
@@ -164,10 +171,12 @@ class SledgeVectorNew(AbstractModelFeature):
             green_lights=self.green_lights.to_device(device=device),
             red_lights=self.red_lights.to_device(device=device),
             ego=self.ego.to_device(device=device),
-            G = self.G.to_device(device=device)
+            G = self.G.to_device(device=device),
+            cam_infos=self.cam_infos,
+            metadata=self.metadata
         )
 
-    def to_feature_tensor(self) -> SledgeVector:
+    def to_feature_tensor(self) -> SledgeVectorNew:
         """Inherited, see superclass."""
         return SledgeVectorNew(
             lines=self.lines.to_feature_tensor(),
@@ -177,13 +186,15 @@ class SledgeVectorNew(AbstractModelFeature):
             green_lights=self.green_lights.to_feature_tensor(),
             red_lights=self.red_lights.to_feature_tensor(),
             ego=self.ego.to_feature_tensor(),
-            G = self.G.to_feature_tensor()
+            G=self.G.to_feature_tensor(),
+            cam_infos=self.cam_infos,
+            metadata=self.metadata
         )
 
     @classmethod
-    def deserialize(cls, data: Dict[str, Any]) -> SledgeVector:
+    def deserialize(cls, data: Dict[str, Any]) -> SledgeVectorNew:
         """Implemented. See interface."""
-        return SledgeVector(
+        return SledgeVectorNew(
             lines=SledgeVectorElement.deserialize(data["lines"]),
             vehicles=SledgeVectorElement.deserialize(data["vehicles"]),
             pedestrians=SledgeVectorElement.deserialize(data["pedestrians"]),
@@ -191,13 +202,15 @@ class SledgeVectorNew(AbstractModelFeature):
             green_lights=SledgeVectorElement.deserialize(data["green_lights"]),
             red_lights=SledgeVectorElement.deserialize(data["red_lights"]),
             ego=SledgeVectorElement.deserialize(data["ego"]),
-            G=SledgeVectorElement.deserialize(data["G"])
-        )
+            G=SledgeVectorElement.deserialize(data["G"]),
+            cam_infos=data.get("cam_infos", None),
+            metadata=data.get("metadata", None)
+        ) 
 
-    def unpack(self) -> List[SledgeVector]:
+    def unpack(self) -> List[SledgeVectorNew]:
         """Implemented. See interface."""
         return [
-            SledgeVector(lines, vehicles, pedestrians, static_objects, green_lights, red_lights, ego, G)
+            SledgeVectorNew(lines, vehicles, pedestrians, static_objects, green_lights, red_lights, ego, G, cam_infos=self.cam_infos, metadata=self.metadata)
             for lines, vehicles, pedestrians, static_objects, green_lights, red_lights, ego, G in zip(
                 self.lines.unpack(),
                 self.vehicles.unpack(),
@@ -211,12 +224,12 @@ class SledgeVectorNew(AbstractModelFeature):
         ]
 
     @classmethod
-    def collate(cls, batch: List[SledgeVector]) -> SledgeVector:
+    def collate(cls, batch: List[SledgeVectorNew]) -> SledgeVectorNew:
         """
         Implemented. See interface.
         Collates a list of features that each have batch size of 1.
         """
-        return SledgeVector(
+        return SledgeVectorNew(
             lines=SledgeVectorElement.collate([item.lines for item in batch]),
             vehicles=SledgeVectorElement.collate([item.vehicles for item in batch]),
             pedestrians=SledgeVectorElement.collate([item.pedestrians for item in batch]),
@@ -224,12 +237,14 @@ class SledgeVectorNew(AbstractModelFeature):
             green_lights=SledgeVectorElement.collate([item.green_lights for item in batch]),
             red_lights=SledgeVectorElement.collate([item.red_lights for item in batch]),
             ego=SledgeVectorElement.collate([item.ego for item in batch]),
-            G=SledgeVectorElement.collate([item.G for item in batch])
+            G=SledgeVectorElement.collate([item.G for item in batch]),
+            cam_infos=[item.cam_infos for item in batch],
+            metadata=[item.metadata for item in batch] if all(item.metadata is not None for item in batch) else None
         )
 
-    def torch_to_numpy(self, apply_sigmoid: bool = True) -> SledgeVector:
+    def torch_to_numpy(self, apply_sigmoid: bool = True) -> SledgeVectorNew:
         """Helper method to convert feature from torch tensor to numpy array."""
-        return SledgeVector(
+        return SledgeVectorNew(
             lines=self.lines.torch_to_numpy(apply_sigmoid),
             vehicles=self.vehicles.torch_to_numpy(apply_sigmoid),
             pedestrians=self.pedestrians.torch_to_numpy(apply_sigmoid),
@@ -237,7 +252,9 @@ class SledgeVectorNew(AbstractModelFeature):
             green_lights=self.green_lights.torch_to_numpy(apply_sigmoid),
             red_lights=self.red_lights.torch_to_numpy(apply_sigmoid),
             ego=self.ego.torch_to_numpy(apply_sigmoid),
-            G=self.G.torch_to_numpy(apply_sigmoid)
+            G=self.G.torch_to_numpy(apply_sigmoid),
+            cam_infos=self.cam_infos,
+            metadata=self.metadata if self.metadata is not None else None
         )
 
 

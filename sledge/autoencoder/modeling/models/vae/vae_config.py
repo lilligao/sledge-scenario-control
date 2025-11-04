@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Optional
 from dataclasses import dataclass
 
 from sledge.autoencoder.preprocessing.features.sledge_vector_feature import SledgeConfig
@@ -11,6 +11,11 @@ class VAEConfig(SledgeConfig):
     # 1. features raw
     radius: int = 100
     pose_interval: int = 1.0
+    filter_vehicles_by_drivable_area: bool = True
+    temporal: bool = False  # if True, process the entire scenario (not only iteration 0)
+    sequence_length: Optional[int] = None  # If None, uses full scenario length
+    filter_non_overlapping: bool = False  # If True, scenarios are filtered to remove overlapping scenarios
+    non_overlapping_gap_seconds: float = 1.0  # If filter_non_overlapping is True, this is the gap in seconds between scenarios to be considered non-overlapping
 
     # 2. features raster & vector
     frame: Tuple[int, int] = (64, 64)

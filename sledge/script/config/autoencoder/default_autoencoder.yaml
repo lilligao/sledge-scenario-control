@@ -47,3 +47,6 @@ cache:
 
 # Mandatory parameters
 py_func: ???                                          # Function to be run inside main (can be "train", "test", "cache")
+
+# NEW
+debug: False

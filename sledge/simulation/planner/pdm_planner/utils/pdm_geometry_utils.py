@@ -94,3 +94,19 @@ def convert_absolute_to_relative_se2_array(
     points_rel[:, 2] = normalize_angle(points_rel[:, 2])
 
     return points_rel
+
+
+def convert_absolute_to_relative_heading(
+    origin: StateSE2, state_se2_array: npt.NDArray[np.float64]
+) -> npt.NDArray[np.float64]:
+    """
+    Converts an StateSE2 array from global to relative coordinates.
+    :param origin: origin pose of relative coords system
+    :param state_se2_array: array of SE2 states with (x,y,θ) in last dim
+    :return: SE2 coords array in relative coordinates
+    """
+    points_rel = state_se2_array
+    points_rel[:, 2] = points_rel[:, 2] - origin.heading
+    points_rel[:, 2] = normalize_angle(points_rel[:, 2])
+
+    return points_rel

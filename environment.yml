@@ -1,4 +1,4 @@
-name: sledge
+name: sledge-lili
 channels:
   - conda-forge
 dependencies:

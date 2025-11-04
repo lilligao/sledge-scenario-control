@@ -18,3 +18,8 @@
 # Custom
 *.ckpt
 *.zip
+
+# debug viz
+debug_vis/
+debug_log_images/
+debug_log_temporal_images/
