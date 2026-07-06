@@ -7,7 +7,7 @@ export PYTHONUNBUFFERED=1
 export NUPLAN_DATA_ROOT="$SCRATCH_ROOT/nuplan_dataset"
 export NUPLAN_MAPS_ROOT="$SCRATCH_ROOT/nuplan_dataset/maps"
 export SLEDGE_EXP_ROOT="$SCRATCH_ROOT/exp"
-export SLEDGE_DEVKIT_ROOT="$HOME/sledge-scenario-dreamer"
+export SLEDGE_DEVKIT_ROOT="$HOME/sledge-scenario-control"
 
 JOB_NAME=scenario_caching
 AUTOENCODER_CHECKPOINT=$SCRATCH_ROOT/final_scenario_dreamer_stuff/sledge/autoencoder/best_model.ckpt

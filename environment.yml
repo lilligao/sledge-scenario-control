@@ -1,4 +1,4 @@
-name: sledge-lili
+name: sledge-scenario-control
 channels:
   - conda-forge
 dependencies:

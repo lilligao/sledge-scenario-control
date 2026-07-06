@@ -87,10 +87,17 @@ def cache_scenarios(args: List[Dict[str, Union[List[str], DictConfig]]]) -> List
             
             features, targets, file_cache_metadata = preprocessor.compute_features(scenario)
 
-            scenario_num_failures = sum(
-                0 if feature.is_valid else 1 for feature in itertools.chain(features.values(), targets.values())
-            )
-            scenario_num_successes = len(features.values()) + len(targets.values()) - scenario_num_failures
+            # Temporal feature builders return a list of per-frame features; flatten so each
+            # frame is validity-checked individually (a list has no `.is_valid`).
+            all_computed_features = []
+            for feature in itertools.chain(features.values(), targets.values()):
+                if isinstance(feature, list):
+                    all_computed_features.extend(feature)
+                else:
+                    all_computed_features.append(feature)
+
+            scenario_num_failures = sum(0 if feature.is_valid else 1 for feature in all_computed_features)
+            scenario_num_successes = len(all_computed_features) - scenario_num_failures
             num_failures += scenario_num_failures
             num_successes += scenario_num_successes
             all_file_cache_metadata += file_cache_metadata

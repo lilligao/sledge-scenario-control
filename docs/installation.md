@@ -5,8 +5,8 @@ Small modifications to installation instructions for SLEDGE. Remember to define 
 ### 1. Clone the sledge-devkit
 Begin by cloning the SLEDGE repository and navigating to the repository directory:
 ```bash
-git clone https://github.com/RLuke22/sledge-scenario-dreamer.git
-cd sledge-scenario-dreamer
+git clone https://github.com/lilligao/sledge-scenario-control.git
+cd sledge-scenario-control
 ```
 
 ### 2. Download the data
@@ -70,7 +70,7 @@ export NUPLAN_DATA_ROOT="$SCRATCH_ROOT/nuplan_dataset"
 export NUPLAN_MAPS_ROOT="$SCRATCH_ROOT/nuplan_dataset/maps"
 
 export SLEDGE_EXP_ROOT="$SCRATCH_ROOT/exp"
-export SLEDGE_DEVKIT_ROOT="$HOME/sledge-scenario-dreamer"
+export SLEDGE_DEVKIT_ROOT="$HOME/sledge-scenario-control"
 ```
 
 ### 3. Install the sledge-devkit

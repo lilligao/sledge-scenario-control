@@ -10,7 +10,7 @@ export NUPLAN_DATA_ROOT="/data_nuplan/nuplan/dataset"
 export NUPLAN_MAPS_ROOT="/data_nuplan/nuplan/dataset/maps"
 
 export SLEDGE_EXP_ROOT="$SCRATCH_ROOT"
-export SLEDGE_DEVKIT_ROOT="/your_path/sledge-scenario-dreamer"
+export SLEDGE_DEVKIT_ROOT="/your_path/sledge-scenario-control"
 
 JOB_NAME=feature_caching_nuplan_trainval_temp
 AUTOENCODER_CACHE_PATH=$SCRATCH_ROOT/caches/autoencoder_cache_scenario_control
